@@ -1,5 +1,6 @@
 import numpy as np
 from utils import Mesh
+from utils import Facet
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -11,10 +12,10 @@ p2 = np.array([np.cos(np.pi / 6), np.sin(np.pi / 6), 0])
 p3 = np.array([np.cos(np.pi / 6), -np.sin(np.pi / 6), 0])
 p4 = np.array([np.cos(np.pi / 6) / 2, 0, np.sin(np.pi / 3)])
 
-f1 = Mesh.Facet(vertices=[p1, p2, p3])
-f2 = Mesh.Facet(vertices=[p1, p2, p4])
-f3 = Mesh.Facet(vertices=[p1, p3, p4])
-f4 = Mesh.Facet(vertices=[p2, p3, p4])
+f1 = Facet(vertices=[p1, p2, p3])
+f2 = Facet(vertices=[p1, p2, p4])
+f3 = Facet(vertices=[p1, p3, p4])
+f4 = Facet(vertices=[p2, p3, p4])
 
 obs = Mesh(faces=[f1, f2, f3, f4])
 # obs.plot_bound(ax)

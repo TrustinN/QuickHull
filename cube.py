@@ -7,9 +7,6 @@ class Bound:
     def __init__(self, dim):
         self.dim = dim
 
-    def margin(self):
-        return
-
     def expand(self):
         return
 
@@ -176,5 +173,7 @@ class NCube(Bound):
 
     def __repr__(self):
         return f"{self.bound}"
+
+
 
 

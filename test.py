@@ -1,5 +1,5 @@
 import numpy as np
-from utils import Mesh
+from utils import ConvexPoly
 from utils import Facet
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -17,7 +17,7 @@ f2 = Facet(vertices=[p1, p2, p4])
 f3 = Facet(vertices=[p1, p3, p4])
 f4 = Facet(vertices=[p2, p3, p4])
 
-obs = Mesh(faces=[f1, f2, f3, f4])
+obs = ConvexPoly(faces=[f1, f2, f3, f4], dim=3)
 # obs.plot_bound(ax)
 obs.plot(ax)
 obs.animate(ax)

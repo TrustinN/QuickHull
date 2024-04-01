@@ -2,7 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from utils import Facet
-from utils import Mesh
+from utils import ConvexPoly
+from rtree.r_tree_utils import NCube
+from rtree.r_tree_utils import IndexRecord
 
 
 class ConvexHull():
@@ -13,20 +15,19 @@ class ConvexHull():
 
 def GetFacets(vertices):
 
-    dim = len(vertices)
-    tr = vertices.T
+    dim = len(vertices) - 1
 
-    def exponentiate(groups, num, b1, l):
+    def helper(groups, num, b1, l):
         if num == 0:
             groups.append(l)
         else:
             for i in range(b1, dim + 1):
                 new = l[:]
-                new.append(tr[i])
-                exponentiate(groups, num - 1, i + 1, new)
+                new.append(vertices[i])
+                helper(groups, num - 1, i + 1, new)
 
     groups = []
-    exponentiate(groups, dim, 0, [])
+    helper(groups, dim, 0, [])
     return [Facet(g) for g in groups]
 
 
@@ -54,30 +55,31 @@ def HullInit(vertices):
     return hull_v
 
 
+# returns vertices on the hull and the faces
 def QuickHull(vertices):
 
-    hull_v = HullInit(vertices)
+    hull_v = HullInit(vertices).T
     facets = GetFacets(hull_v)
 
-    return facets
+    return hull_v, facets
 
-
-f = plt.figure()
-ax = f.add_subplot(1, 1, 1, projection=Axes3D.name)
 
 p1 = np.array([0, 0, 0])
 p2 = np.array([np.cos(np.pi / 6), np.sin(np.pi / 6), 0])
 p3 = np.array([np.cos(np.pi / 6), -np.sin(np.pi / 6), 0])
-p4 = np.array([1, 1, 0])
-p5 = np.array([-1, 1, 0])
-p6 = np.array([np.cos(np.pi / 6) / 2, 0, np.sin(np.pi / 3)])
-p7 = np.array([1, -1, 0])
+p4 = np.array([np.cos(np.pi / 6) / 2, 0, np.sin(np.pi / 3)])
+p5 = np.array([.2, 0, .2])
 
-vertices = [p1, p2, p3, p4, p5, p6, p7]
-hull = QuickHull(vertices)
-obs = Mesh(hull)
-obs.plot(ax)
-obs.animate(ax)
+vertices = [p1, p2, p3, p4]
+
+v, f = QuickHull(vertices)
+obs = ConvexPoly(faces=f, dim=3)
+# obs.plot(ax)
+# obs.animate(ax)
+print(obs.tree)
+obs.tree.Insert(IndexRecord(NCube.make_bound(p5), p5))
+print(obs.contains_point(p5))
+obs.tree.animate()
 
 
 

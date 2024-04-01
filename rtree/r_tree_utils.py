@@ -1,11 +1,15 @@
 import math
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class Bound:
 
     def __init__(self, dim):
         self.dim = dim
+
+    def margin(self):
+        return
 
     def expand(self):
         return
@@ -18,6 +22,57 @@ class Bound:
 
     def rm_plot(self):
         return
+
+
+class NCircle(Bound):
+
+    def __init__(self, center, radius):
+        super().__init__(len(center))
+        self.center = center
+        self.radius = radius
+
+    def get_sphere():
+
+        phi, theta = np.mgrid[0:np.pi:100j, 0:2 * np.pi:100j]
+        x = np.cos(theta) * np.sin(phi)
+        y = np.sin(theta) * np.sin(phi)
+        z = np.cos(phi)
+
+        return x, y, z
+
+    def overlap(self, other):
+
+        if type(other) is NCircle:
+            return np.linalg.norm(self.center - other.center) >= self.radius + other.radius
+
+        elif type(other) is NCube:
+            return NCube.get_dist(other, self.center) <= self.radius
+
+    def plot(self, c, ax):
+
+        if ax:
+            if self.dim == 2:
+
+                cc = plt.Circle((self.center[0], self.center[1]), self.radius, fill=False)
+                ax.add_artist(cc)
+
+            elif self.dim == 3:
+
+                x, y, z = NCircle.get_sphere()
+                ax.plot_surface(self.radius * x + self.center[0],
+                                self.radius * y + self.center[1],
+                                self.radius * z + self.center[2],
+                                alpha=0.08,
+                                shade=False,
+                                )
+
+    def contains(self, other):
+
+        points = other.get_points()
+        for p in points:
+            if np.linalg.norm(p - self.center) > self.radius:
+                return False
+        return True
 
 
 class NCube(Bound):
@@ -173,6 +228,78 @@ class NCube(Bound):
 
     def __repr__(self):
         return f"{self.bound}"
+
+
+class Entry:
+
+    def __init__(self, bound):
+
+        self.bound = bound
+
+
+class IndexRecord(Entry):
+
+    def __init__(self, bound, tuple_identifier):
+
+        self.dim = len(tuple_identifier)
+        if not bound:
+            bound = NCube([tuple_identifier[i // 2] for i in range(2 * self.dim)])
+
+        super().__init__(bound)
+        self.tuple_identifier = tuple_identifier
+
+    def plot(self, color, ax):
+        if self.dim == 2:
+            return ax.scatter(self.tuple_identifier[0], self.tuple_identifier[1], c=color, s=10, edgecolor='none')
+        elif self.dim == 3:
+            return ax.scatter(self.tuple_identifier[0], self.tuple_identifier[1], self.tuple_identifier[2], c=color, s=10, edgecolor='none')
+
+    def __str__(self):
+        return f"val: {self.tuple_identifier}"
+
+    def __repr__(self):
+        return f"val: {self.tuple_identifier}"
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__) and np.array_equal(self.tuple_identifier, other.tuple_identifier):
+            return True
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+class IndexPointer(Entry):
+
+    def __init__(self, bound, pointer):
+
+        super().__init__(bound)
+        self.pointer = pointer
+
+    def update(self, bound):
+        self.bound = bound
+
+    def __str__(self):
+        return "pt " + f"{self.bound} -> {self.pointer}"
+
+    def __repr__(self):
+        return "pt " + f"{self.bound} -> {self.pointer}"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

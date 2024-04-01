@@ -32,6 +32,12 @@ class Facet(IndexRecord):
     def plot_bound(self, ax):
         self.bound.plot(10, ax)
 
+    def __eq__(self, other):
+        return False
+
+    def __ne__(self, other):
+        return True
+
     def __str__(self):
         return f"val: {self.vertices}"
 
@@ -74,7 +80,7 @@ class ConvexPoly():
     def __init__(self, faces, dim):
 
         self.faces = faces
-        self.tree = RTree(2, dim=dim, plotting=True)
+        self.tree = RTree(5, dim=dim, plotting=True)
         for f in self.faces:
             self.tree.Insert(f)
 

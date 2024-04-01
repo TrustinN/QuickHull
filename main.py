@@ -1,9 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from utils import Facet
 from utils import ConvexPoly
-from rtree.r_tree_utils import NCube
 from rtree.r_tree_utils import IndexRecord
 
 
@@ -35,15 +32,17 @@ def HullInit(vertices):
 
     init_point = vertices[0]
     dim = len(init_point)
-    hull_v = np.c_[init_point]
-    rank = np.linalg.matrix_rank(hull_v)
-    num_points = 1
+    hull_v = np.array([])
+    rank = 0
+    num_points = 0
     iter = 0
 
-    while num_points < dim + 1:
+    while num_points < dim:
 
-        copy = hull_v.copy()
-        copy = np.c_[copy, vertices[iter + 1] - init_point]
+        copy = np.c_[vertices[iter + 1] - init_point]
+        if rank != 0:
+            copy = hull_v.copy()
+            copy = np.c_[copy, vertices[iter + 1] - init_point]
         new_rank = np.linalg.matrix_rank(copy)
         iter += 1
 
@@ -52,7 +51,7 @@ def HullInit(vertices):
             rank = new_rank
             num_points += 1
 
-    return hull_v
+    return np.c_[init_point, hull_v]
 
 
 # returns vertices on the hull and the faces
@@ -64,22 +63,43 @@ def QuickHull(vertices):
     return hull_v, facets
 
 
-p1 = np.array([0, 0, 0])
+def sample_point(bounds):
+    rand_x = (bounds[1] - bounds[0]) * np.random.random_sample() + bounds[0]
+    rand_y = (bounds[3] - bounds[2]) * np.random.random_sample() + bounds[2]
+    rand_z = (bounds[5] - bounds[4]) * np.random.random_sample() + bounds[4]
+    return rand_x, rand_y, rand_z
+
+
+def insert(n, tree):
+
+    points = []
+    for i in range(n):
+        x, y, z = sample_point([-1, 1, -1, 1, -1, 1])
+        ti = np.array([x, y, z])
+        points.append(ti)
+        ir = IndexRecord(bound=None, tuple_identifier=ti)
+        tree.Insert(ir)
+    return points
+
+
+p1 = np.array([-.5, -1, -.5])
 p2 = np.array([np.cos(np.pi / 6), np.sin(np.pi / 6), 0])
 p3 = np.array([np.cos(np.pi / 6), -np.sin(np.pi / 6), 0])
 p4 = np.array([np.cos(np.pi / 6) / 2, 0, np.sin(np.pi / 3)])
-p5 = np.array([.2, 0, .2])
 
 vertices = [p1, p2, p3, p4]
 
 v, f = QuickHull(vertices)
 obs = ConvexPoly(faces=f, dim=3)
-# obs.plot(ax)
-# obs.animate(ax)
-print(obs.tree)
-obs.tree.Insert(IndexRecord(NCube.make_bound(p5), p5))
-print(obs.contains_point(p5))
+
+points = insert(150, obs.tree)
+
+for p in points:
+    if obs.contains_point(p):
+        obs.tree.Delete(IndexRecord(bound=None, tuple_identifier=p))
+
 obs.tree.animate()
+
 
 
 

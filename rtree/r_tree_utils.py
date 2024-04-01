@@ -243,7 +243,7 @@ class IndexRecord(Entry):
 
         self.dim = len(tuple_identifier)
         if not bound:
-            bound = NCube([tuple_identifier[i // 2] for i in range(2 * self.dim)])
+            bound = NCube([NCube.Endpoints(tuple_identifier[i], tuple_identifier[i]) for i in range(self.dim)])
 
         super().__init__(bound)
         self.tuple_identifier = tuple_identifier
@@ -285,6 +285,8 @@ class IndexPointer(Entry):
 
     def __repr__(self):
         return "pt " + f"{self.bound} -> {self.pointer}"
+
+
 
 
 

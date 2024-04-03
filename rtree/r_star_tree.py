@@ -155,11 +155,9 @@ class RTree(object):
         def rm_plot(self):
 
             if self.ax:
+                for i in self.items:
+                    i.rm_plot()
 
-                for h in self.points:
-                    h.remove()
-
-                self.points = []
                 self.covering.rm_plot()
 
         def __str__(self):

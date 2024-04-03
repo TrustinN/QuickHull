@@ -211,8 +211,10 @@ def insert(n):
     return points
 
 
-points = insert(27)
+points = insert(500)
 obs = QuickHull(points)
+# for f in obs.faces:
+#     obs.tree.Delete(f)
 
 obs.tree.animate()
 

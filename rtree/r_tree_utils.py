@@ -146,10 +146,13 @@ class NCube(Bound):
         return np.prod([NCube.Endpoints.expand(b1.bound[i], b2.bound[i]).length for i in range(b1.dim)])
 
     def combine(bounds):
-        nb = [NCube.Endpoints(math.inf, -math.inf) for i in range(bounds[0].dim)]
-        for i in range(len(bounds)):
-            curr_bound = bounds[i]
-            nb = [NCube.Endpoints.expand(nb[j], curr_bound.bound[j]) for j in range(len(curr_bound.bound))]
+        if bounds:
+            nb = [NCube.Endpoints(math.inf, -math.inf) for i in range(bounds[0].dim)]
+            for i in range(len(bounds)):
+                curr_bound = bounds[i]
+                nb = [NCube.Endpoints.expand(nb[j], curr_bound.bound[j]) for j in range(len(curr_bound.bound))]
+        else:
+            nb = [NCube.Endpoints(math.inf, -math.inf) for i in range(3)]
 
         return NCube(nb)
 
@@ -247,12 +250,16 @@ class IndexRecord(Entry):
 
         super().__init__(bound)
         self.tuple_identifier = tuple_identifier
+        self.p_obj = None
 
     def plot(self, color, ax):
         if self.dim == 2:
-            return ax.scatter(self.tuple_identifier[0], self.tuple_identifier[1], c=color, s=10, edgecolor='none')
+            self.p_obj = ax.scatter(self.tuple_identifier[0], self.tuple_identifier[1], c=color, s=10, edgecolor='none')
         elif self.dim == 3:
-            return ax.scatter(self.tuple_identifier[0], self.tuple_identifier[1], self.tuple_identifier[2], c=color, s=10, edgecolor='none')
+            self.p_obj = ax.scatter(self.tuple_identifier[0], self.tuple_identifier[1], self.tuple_identifier[2], c=color, s=10, edgecolor='none')
+
+    def rm_plot(self):
+        self.p_obj.remove()
 
     def __str__(self):
         return f"val: {self.tuple_identifier}"
@@ -285,16 +292,6 @@ class IndexPointer(Entry):
 
     def __repr__(self):
         return "pt " + f"{self.bound} -> {self.pointer}"
-
-
-
-
-
-
-
-
-
-
 
 
 

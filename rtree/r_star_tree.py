@@ -103,23 +103,13 @@ class RTree(object):
                 #     covering.plot("#009b00", self.ax)
 
                 for i in self.items:
-                    p_obj = i.plot(self.color, self.ax)
-
-                    if isinstance(p_obj, list):
-                        self.points += p_obj
-                    else:
-                        self.points.append(p_obj)
+                    i.plot(self.color, self.ax)
 
         def plot(self):
 
             if self.ax:
                 for i in self.items:
-                    p_obj = i.plot(self.color, self.ax)
-
-                    if isinstance(p_obj, list):
-                        self.points += p_obj
-                    else:
-                        self.points.append(p_obj)
+                    i.plot(self.color, self.ax)
 
         def add_entry(self, entry):
 
@@ -137,12 +127,7 @@ class RTree(object):
                 self.covering = entry.bound
 
             if self.ax:
-                p_obj = entry.plot(self.color, self.ax)
-
-                if isinstance(p_obj, list):
-                    self.points += p_obj
-                else:
-                    self.points.append(p_obj)
+                entry.plot(self.color, self.ax)
 
         def rm_entry(self, entry):
 
@@ -151,8 +136,7 @@ class RTree(object):
 
                     # Remove index_entry, adjust leaf covering
                     if self.ax:
-                        point_plot = self.points.pop(i)
-                        point_plot.remove()
+                        entry.rm_plot()
                     self.items.pop(i)
                     self.update_bound(RTree.Bound.combine([j.bound for j in self.items]))
 

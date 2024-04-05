@@ -66,7 +66,7 @@ def AddToOutside(face, unclaimed):
             face.outside_vertices.append(v)
 
 
-def CalculateHorizon(eyepoint, crossed_edge, start_idx, curr_face, horizon_edges, horizon_faces, unclaimed, visited, poly):
+def CalculateHorizon(eyepoint, crossed_edge, start_idx, curr_face, horizon_edges, horizon_faces, unclaimed):
 
     if not curr_face.visited:
 
@@ -75,7 +75,6 @@ def CalculateHorizon(eyepoint, crossed_edge, start_idx, curr_face, horizon_edges
             horizon_edges.append(crossed_edge)
 
         else:
-            visited.append(curr_face)
             curr_face.visited = True
             curr_face.in_conv_poly = False
             edges = curr_face.vertices
@@ -100,33 +99,31 @@ def CalculateHorizon(eyepoint, crossed_edge, start_idx, curr_face, horizon_edges
 
                     n += 1
 
-                CalculateHorizon(eyepoint, cr_edge, st_idx + 1, f, horizon_edges, horizon_faces, unclaimed, visited, poly)
+                CalculateHorizon(eyepoint, cr_edge, st_idx + 1, f, horizon_edges, horizon_faces, unclaimed)
 
 
 # returns vertices on the hull and the faces
 def QuickHull(vertices):
 
-    hull, dim = CreateSimplex(vertices)
-    for f in hull:
+    facets, dim = CreateSimplex(vertices)
+    for f in facets:
         AddToOutside(f, vertices)
 
     # Create convex hull which starts a tetrahedral
-    conv = ConvexPoly()
-    num_points = len(hull)
+    num_points = len(facets)
+
     for i in range(num_points):
-        f = hull[i]
-        conv.add_face(f)
+        f = facets[i]
 
         # connect faces as neighbors if they share an edge
-        f.add_neighbor(hull[(i + 1) % num_points])
-        f.add_neighbor(hull[(i + 2) % num_points])
-        f.add_neighbor(hull[(i + 3) % num_points])
+        f.add_neighbor(facets[(i + 1) % num_points])
+        f.add_neighbor(facets[(i + 2) % num_points])
+        f.add_neighbor(facets[(i + 3) % num_points])
 
-    queue = [h for h in hull if len(h.outside_vertices) > 0]
+    queue = facets[:]
 
     while queue:
 
-        unclaimed = []
         face = queue.pop()
         if face.in_conv_poly:
 
@@ -140,12 +137,9 @@ def QuickHull(vertices):
                     farthest_pt = v
                     max_dist = curr_dist
 
-            horizon_edges, horizon_faces, visited = [], [], []
-            CalculateHorizon(farthest_pt, None, 0, face, horizon_edges, horizon_faces, unclaimed, visited, conv)
-
-            for f in visited:
-                f.visited = False
-                conv.tree.Delete(f)
+            horizon_edges, horizon_faces = [], []
+            unclaimed = []
+            CalculateHorizon(farthest_pt, None, 0, face, horizon_edges, horizon_faces, unclaimed)
 
             first_f = None
             prev_f = None
@@ -159,11 +153,12 @@ def QuickHull(vertices):
 
                 if len(f.outside_vertices) > 0:
                     queue.append(f)
-                conv.add_face(f)
+                facets.append(f)
 
                 curr_hface = horizon_faces[i]
                 curr_hface.add_neighbor(f)
                 f.add_neighbor(curr_hface)
+
                 if prev_f:
                     f.add_neighbor(prev_f)
                     prev_f.add_neighbor(f)
@@ -180,19 +175,21 @@ def QuickHull(vertices):
                 # Removing old neighbors
                 n = 0
                 cont = True
+
                 while cont:
                     f = curr_hface.neighbors[n]
-
                     vert = f.vertices
+
                     for j in range(len(vert)):
                         l1 = [vert[j], vert[(j + 1) % len(f.vertices)]]
                         l2 = ne
+
                         if np.array_equal(l1[0], l2[0]) and np.array_equal(l1[1], l2[1]):
                             curr_hface.neighbors.pop(n)
                             cont = False
                     n += 1
 
-    return conv
+    return [f for f in facets if f.in_conv_poly]
 
 
 def sample_point(bounds):
@@ -212,25 +209,13 @@ def insert(n):
     return points
 
 
-points = insert(100)
-start = timeit.default_timer()
-obs = QuickHull(points)
-end = timeit.default_timer()
-print("Total:", end - start)
-# for f in obs.faces:
-#     obs.tree.Delete(f)
+points = insert(20)
+facets = QuickHull(points)
+poly = ConvexPoly(faces=facets, plotting=True)
 
-obs.tree.animate()
+poly.animate()
 
 print("Done")
-
-# Total: 0.06041033298242837
-# Total: 0.0974922920577228
-# Total: 0.13964195805601776
-# Total: 0.2200183339882642
-# Total: 0.406248249928467
-# Total: 1.0096944170072675
-# Total: 1.4437881250632927
 
 
 

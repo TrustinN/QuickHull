@@ -1,10 +1,9 @@
 import math
 import numpy as np
-from rtree.r_tree_utils import NCube
 from rtree.r_tree_utils import IndexRecord
-from rtree.r_star_tree import RTree
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from mpl_toolkits.mplot3d import Axes3D
 
 
 class Graph():
@@ -15,14 +14,12 @@ class Graph():
         self.vertices.append(v)
 
 
-class Facet(IndexRecord):
+class Facet():
 
     def __init__(self, vertices):
 
         self.vertices = vertices
         self.num_vertices = len(self.vertices)
-        bounds = list(map(lambda v: NCube([NCube.Endpoints(v[i], v[i]) for i in range(len(v))]), vertices))
-        self.bound = NCube.combine(bounds)
         self.b = init_point = self.vertices[0]
         self.subspace = np.array([self.vertices[i + 1] - init_point for i in range(len(self.vertices) - 1)]).T
         self.dim = np.linalg.matrix_rank(self.subspace) + 1
@@ -35,10 +32,10 @@ class Facet(IndexRecord):
     def add_neighbor(self, f):
         self.neighbors.append(f)
 
-    def plot(self, color, ax):
+    def plot(self, ax):
         self.plots = [ax.add_collection3d(Poly3DCollection([self.vertices], alpha=0.08))]
         for v in self.vertices:
-            self.plots.append(ax.scatter(v[0], v[1], v[2], c=color, s=10, edgecolor='none'))
+            self.plots.append(ax.scatter(v[0], v[1], v[2], s=10, edgecolor='none'))
 
     def rm_plot(self):
         for p in self.plots:
@@ -58,9 +55,6 @@ class Facet(IndexRecord):
         c1 = np.vstack([self.o, p])
         c2 = np.c_[c1, np.ones(self.dim + 1)]
         return np.linalg.det(c2)
-
-    def plot_bound(self, ax):
-        self.bound.plot(10, ax)
 
     def __eq__(self, other):
         if isinstance(other, Facet):
@@ -83,18 +77,19 @@ class Facet(IndexRecord):
 
 class ConvexPoly():
 
-    def __init__(self, faces=[]):
+    def __init__(self, faces=[], plotting=False):
 
+        self.plotting = plotting
         self.faces = faces
-        self.tree = RTree(10, dim=3, plotting=True)
-        self.graph = Graph()
-        for f in faces:
-            self.add_face(f)
 
-    def add_face(self, face):
-        self.faces.append(face)
-        self.tree.Insert(face)
-        self.graph.add_vertex(face)
+        if self.plotting:
+
+            f = plt.figure()
+            ax = f.add_subplot(1, 1, 1, projection=Axes3D.name)
+            self.ax = ax
+
+            for f in self.faces:
+                f.plot(ax=self.ax)
 
     def contains_point(self, p):
         for f in self.faces:
@@ -106,19 +101,17 @@ class ConvexPoly():
                 return False
         return True
 
-    def plot(self, ax=None):
-        for f in self.faces:
-            f.plot(ax=ax)
+    def animate(self):
+        if self.plotting:
+            for angle in range(0, 1000, 2):
 
-    def animate(self, ax):
+                self.ax.view_init(elev=angle + math.sin(1 / (angle + 1)) / 5, azim=.7 * angle, roll=.8 * angle)
+                plt.draw()
+                plt.pause(.001)
 
-        for angle in range(0, 1000, 1):
+            plt.show()
 
-            ax.view_init(elev=angle + math.sin(1 / (angle + 1)) / 5, azim=.7 * angle, roll=.8 * angle)
-            plt.draw()
-            plt.pause(.001)
 
-        plt.show()
 
 
 

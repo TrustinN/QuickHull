@@ -1,17 +1,8 @@
 import math
 import numpy as np
-from rtree.r_tree_utils import IndexRecord
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from mpl_toolkits.mplot3d import Axes3D
-
-
-class Graph():
-    def __init__(self, vertices=[]):
-        self.vertices = vertices
-
-    def add_vertex(self, v):
-        self.vertices.append(v)
 
 
 class Facet():
@@ -32,15 +23,6 @@ class Facet():
     def add_neighbor(self, f):
         self.neighbors.append(f)
 
-    def plot(self, ax):
-        self.plots = [ax.add_collection3d(Poly3DCollection([self.vertices], alpha=0.08))]
-        for v in self.vertices:
-            self.plots.append(ax.scatter(v[0], v[1], v[2], s=10, edgecolor='none'))
-
-    def rm_plot(self):
-        for p in self.plots:
-            p.remove()
-
     def normal(self):
         v1 = self.vertices[1] - self.vertices[0]
         v2 = self.vertices[2] - self.vertices[0]
@@ -55,6 +37,15 @@ class Facet():
         c1 = np.vstack([self.o, p])
         c2 = np.c_[c1, np.ones(self.dim + 1)]
         return np.linalg.det(c2)
+
+    def plot(self, ax):
+        self.plots = [ax.add_collection3d(Poly3DCollection([self.vertices], alpha=0.08))]
+        for v in self.vertices:
+            self.plots.append(ax.scatter(v[0], v[1], v[2], s=10, edgecolor='none'))
+
+    def rm_plot(self):
+        for p in self.plots:
+            p.remove()
 
     def __eq__(self, other):
         if isinstance(other, Facet):

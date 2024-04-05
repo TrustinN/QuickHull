@@ -86,11 +86,10 @@ class ConvexPoly():
     def __init__(self, faces=[]):
 
         self.faces = faces
+        self.tree = RTree(10, dim=3, plotting=True)
+        self.graph = Graph()
         for f in faces:
             self.add_face(f)
-
-        self.tree = RTree(5, dim=3, plotting=True)
-        self.graph = Graph()
 
     def add_face(self, face):
         self.faces.append(face)
@@ -120,6 +119,8 @@ class ConvexPoly():
             plt.pause(.001)
 
         plt.show()
+
+
 
 
 

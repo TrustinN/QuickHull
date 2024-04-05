@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import timeit
 from utils import Facet
 from utils import ConvexPoly
 
@@ -121,11 +122,11 @@ def QuickHull(vertices):
         f.add_neighbor(hull[(i + 2) % num_points])
         f.add_neighbor(hull[(i + 3) % num_points])
 
-    unclaimed = []
     queue = [h for h in hull if len(h.outside_vertices) > 0]
 
     while queue:
 
+        unclaimed = []
         face = queue.pop()
         if face.in_conv_poly:
 
@@ -205,20 +206,33 @@ def insert(n):
 
     points = []
     for i in range(n):
-        x, y, z = sample_point([0, 1, -1, 1, 0, 1])
+        x, y, z = sample_point([0, 10, -10, 10, 0, 10])
         ti = np.array([x, y, z])
         points.append(ti)
     return points
 
 
-points = insert(500)
+points = insert(100)
+start = timeit.default_timer()
 obs = QuickHull(points)
+end = timeit.default_timer()
+print("Total:", end - start)
 # for f in obs.faces:
 #     obs.tree.Delete(f)
 
 obs.tree.animate()
 
 print("Done")
+
+# Total: 0.06041033298242837
+# Total: 0.0974922920577228
+# Total: 0.13964195805601776
+# Total: 0.2200183339882642
+# Total: 0.406248249928467
+# Total: 1.0096944170072675
+# Total: 1.4437881250632927
+
+
 
 
 

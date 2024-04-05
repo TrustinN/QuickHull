@@ -97,7 +97,6 @@ class RTree(object):
             if self.ax:
 
                 self.color = "#" + "".join([random.choice('ABCDEF0123456789') for i in range(6)])
-                self.points = []
 
                 # if self.covering:
                 #     covering.plot("#009b00", self.ax)
